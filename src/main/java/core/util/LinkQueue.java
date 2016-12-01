@@ -1,10 +1,8 @@
 package core.util;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by zsc on 2016/10/25.
@@ -40,9 +38,7 @@ public class LinkQueue {
 
     //队列新增URL
     public static void addUnvisititedUrl(String url) {
-        if (url != null && !url.trim().equals("") && !visitedUrl.contains(url) && !unVisitedUrl.contains(url)) {
-            unVisitedUrl.add(url);
-        }
+        unVisitedUrl.add(url);
     }
 
     //移除队列中的URL

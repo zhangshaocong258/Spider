@@ -62,14 +62,22 @@ public class Scheduler {
     }
 
     //下载失败，重新添加回待爬取队列
-    public synchronized void recallURL(String URL) {
-        LinkQueue.addUnvisititedUrl(URL);
-        LinkQueue.removeVisitedUrl(URL);
+    public synchronized void recallURL(String url) {
+        if (url != null && !url.trim().equals("") &&
+                !LinkQueue.getVisitedUrl().contains(url) &&
+                !LinkQueue.getUnVisitedUrl().contains(url)) {
+            LinkQueue.addUnvisititedUrl(url);
+        }
+        LinkQueue.removeVisitedUrl(url);
     }
 
     public synchronized void insertNewURL(Set<String> newURL) {
         for (String url : newURL) {
-            LinkQueue.addUnvisititedUrl(url);
+            if (url != null && !url.trim().equals("") &&
+                    !LinkQueue.getVisitedUrl().contains(url) &&
+                    !LinkQueue.getUnVisitedUrl().contains(url)) {
+                LinkQueue.addUnvisititedUrl(url);
+            }
         }
 
         //添加完毕后，如果URL队列不为空，则唤起
