@@ -38,7 +38,7 @@ public class Spider {
 
         //创建文件夹
         File folder = new File(Config.downloadPath);
-        if (!folder.exists() && folder.isDirectory()) {
+        if (!folder.exists()) {
             folder.mkdirs();
         }
 
