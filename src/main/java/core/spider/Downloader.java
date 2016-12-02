@@ -13,6 +13,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.*;
@@ -70,7 +74,8 @@ public class Downloader {
                 throw new ClientProtocolException("Response contains no content");
             } else {
                 InputStream inputStream = httpEntity.getContent();//报错IOException
-                htmlDoc = getHtmlDoc(inputStream);//得到html内容，是否为空未判断！！！！！
+                htmlDoc = getHtmlDoc(inputStream);//得到html内容，是否为空已判断！！！！！可用下面的方式
+//                htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
                 String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
                 System.out.println("filename: " + filename);
                 saveDoc(url, filename, htmlDoc);
@@ -81,7 +86,7 @@ public class Downloader {
     }
 
     //得到html后缀，将url中的/替换为_，否则保存文件出错
-    public static String getFilenameByUrl(String url, String contentType) {
+    private static String getFilenameByUrl(String url, String contentType) {
         //contentType:  text/html; charset=UTF-8
 
         //http://为7，https://为8
@@ -104,21 +109,16 @@ public class Downloader {
     }
 
     //得到原始html内容
-    public static String getHtmlDoc(InputStream inputStream) {
+    private static String getHtmlDoc(InputStream inputStream) throws IOException {
         StringBuffer document = new StringBuffer();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, CHARSET));
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                if (!line.trim().isEmpty())
-                    document.append(line + "\n");
-            }
-        } catch (MalformedURLException e) {
-            System.out.println("Unable to connect to URL: ");
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, CHARSET));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            if (!line.trim().isEmpty())
+                document.append(line + "\n");
         }
+
         return document.toString();
     }
 
@@ -153,39 +153,46 @@ public class Downloader {
      * @param fileName
      * @param htmlDoc  保存html内容到.html文件中 Done
      */
-    private static void saveDoc(String url, String fileName, String htmlDoc) {
+    private static void saveDoc(String url, String fileName, String htmlDoc) throws IOException {
 
-        try {
-            BufferedWriter bfWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Config.downloadPath +
-                    File.separator + fileName), CHARSET));
-            String versionStr = "version:1.0\n";
-            String URLStr = "url:" + url + "\n";
 
-            Date date = new Date();
-            String dateStr = "date:" + date.toString() + "\n";
+        BufferedWriter bfWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Config.downloadPath +
+                File.separator + fileName), CHARSET));//IOException
+        String versionStr = "version:1.0\n";
+        String URLStr = "url:" + url + "\n";
 
-            InetAddress address = InetAddress.getByName(new URL(url).getHost());
-            String IPStr = address.toString();
-            IPStr = "IP:" + IPStr.substring(IPStr.indexOf("/") + 1, IPStr.length()) + "\n";
+        Date date = new Date();
+        String dateStr = "date:" + date.toString() + "\n";
 
-            String htmlLen = "length:" + htmlDoc.length() + "\n";
+        InetAddress address = InetAddress.getByName(new URL(url).getHost());//IOException
+        String IPStr = address.toString();
+        IPStr = "IP:" + IPStr.substring(IPStr.indexOf("/") + 1, IPStr.length()) + "\n";
 
-            //数据头部分
-            bfWriter.write(versionStr);
-            bfWriter.write(URLStr);
-            bfWriter.write(dateStr);
-            bfWriter.write(IPStr);
-            bfWriter.write(htmlLen);
-            bfWriter.newLine();
+        String htmlLen = "length:" + htmlDoc.length() + "\n";
 
-            //数据部分
-            bfWriter.write(htmlDoc);
+        //数据头部分
+        bfWriter.write(versionStr);//所有writeIOException
+        bfWriter.write(URLStr);
+        bfWriter.write(dateStr);
+        bfWriter.write(IPStr);
+        bfWriter.write(htmlLen);
+        bfWriter.newLine();
 
-            bfWriter.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        //数据部分
+        Document document = Jsoup.parse(htmlDoc);
+        Elements links = document.select("script");
+        for (int i = 0; i < links.size(); i++) {
+            if (links.get(i).attr("data-reactid").equals("21")) {
+                links.get(i).remove();
+            }
+//                links.get(i).removeAttr("src");
+//                System.out.println("script: " + links.get(i).toString());
         }
+        htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
+        bfWriter.write(htmlDoc);//IOException
+
+        bfWriter.flush();//IOException
+
 
     }
 }
