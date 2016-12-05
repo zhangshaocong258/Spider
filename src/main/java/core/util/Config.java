@@ -93,7 +93,34 @@ public class Config {
      */
     public static String questionMark;
 
+    /**
+     * Redis配置
+     */
 
+    /**
+     * Redis 是否使用
+     */
+    public static boolean redisEnable;
+
+    /**
+     * Redis IP
+     */
+    public static String redisIP;
+
+    /**
+     * Redis Port
+     */
+    public static int redisPort;
+
+    /**
+     * Redis visitedUrl
+     */
+    public static String visitedUrl;
+
+    /**
+     * Redis unVisitedUrl
+     */
+    public static String unVisitedUrl;
 
 
     static {
@@ -118,6 +145,12 @@ public class Config {
         copyright = properties.getProperty("copyright");
         symbol = properties.getProperty("symbol");
         questionMark = properties.getProperty("questionMark");
+        redisEnable = Boolean.valueOf(properties.getProperty("redisEnable"));
+        redisIP = properties.getProperty("redisIP");
+        redisPort = Integer.valueOf(properties.getProperty("redisPort"));
+        visitedUrl = properties.getProperty("visitedUrl");
+        unVisitedUrl = properties.getProperty("unVisitedUrl");
+
     }
 
 }

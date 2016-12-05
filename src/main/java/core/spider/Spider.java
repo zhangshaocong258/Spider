@@ -2,6 +2,7 @@ package core.spider;
 
 import core.util.LinkQueue;
 import core.util.Config;
+import core.util.RedisSet;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +35,11 @@ public class Spider {
      */
     public void start(String url) {
         //初始化URL表
-        LinkQueue.initializeUrls(url);
+        if (Config.redisEnable) {
+            RedisSet.initializeUrls(url);
+        } else {
+            LinkQueue.initializeUrls(url);
+        }
 
         //创建文件夹
         File folder = new File(Config.downloadPath);
@@ -68,6 +73,9 @@ public class Spider {
             } finally {
                 threadPool.shutdown();
             }
+        }
+        if (Config.redisEnable) {
+            RedisSet.save();
         }
         long endTime = System.currentTimeMillis();
         System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");

@@ -11,7 +11,7 @@ public class LinkQueue {
     private static HashSet<String> visitedUrl = new HashSet<String>();//已访问过的URL，不能重复
     private static List<String> unVisitedUrl = new LinkedList<String>();//等待访问的URL
 
-    //获得已经访问的URL数目
+    //获得已经访问的URL
     public static HashSet<String> getVisitedUrl() {
         return visitedUrl;
     }

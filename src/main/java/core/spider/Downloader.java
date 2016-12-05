@@ -1,6 +1,7 @@
 package core.spider;
 
 import core.util.Config;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -16,10 +17,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -74,7 +77,7 @@ public class Downloader {
                 throw new ClientProtocolException("Response contains no content");
             } else {
                 InputStream inputStream = httpEntity.getContent();//报错IOException
-                htmlDoc = getHtmlDoc(inputStream);//得到html内容，是否为空已判断！！！！！可用下面的方式
+                htmlDoc = IOUtils.toString(inputStream);//得到html内容，是否为空已判断！！！！！可用下面的方式
 //                htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
                 String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
                 System.out.println("filename: " + filename);
@@ -108,7 +111,7 @@ public class Downloader {
         }
     }
 
-    //得到原始html内容
+    //得到原始html内容@Deprecated，最好使用stringwrite
     private static String getHtmlDoc(InputStream inputStream) throws IOException {
         StringBuffer document = new StringBuffer();
 
@@ -158,28 +161,36 @@ public class Downloader {
 
         BufferedWriter bfWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Config.downloadPath +
                 File.separator + fileName), CHARSET));//IOException
-        String versionStr = "version:1.0\n";
-        String URLStr = "url:" + url + "\n";
+
+        String versionStr = "<version>" + "version:1.0" + "</version>";
+
+        String URLStr = "<url>" + url + "</url>";
 
         Date date = new Date();
-        String dateStr = "date:" + date.toString() + "\n";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = "<date>" + sdf.format(date) + "</date>";
 
         InetAddress address = InetAddress.getByName(new URL(url).getHost());//IOException
         String IPStr = address.toString();
-        IPStr = "IP:" + IPStr.substring(IPStr.indexOf("/") + 1, IPStr.length()) + "\n";
+        IPStr = "<ip>" + IPStr.substring(IPStr.indexOf("/") + 1, IPStr.length()) + "</ip>";
 
-        String htmlLen = "length:" + htmlDoc.length() + "\n";
+        String htmlLen = "<length>" + htmlDoc.length() + "</length>";
 
         //数据头部分
-        bfWriter.write(versionStr);//所有writeIOException
-        bfWriter.write(URLStr);
-        bfWriter.write(dateStr);
-        bfWriter.write(IPStr);
-        bfWriter.write(htmlLen);
-        bfWriter.newLine();
+//        bfWriter.write(versionStr);//所有writeIOException
+//        bfWriter.write(URLStr);
+//        bfWriter.write(dateStr);
+//        bfWriter.write(IPStr);
+//        bfWriter.write(htmlLen);
+//        bfWriter.newLine();
 
         //数据部分
         Document document = Jsoup.parse(htmlDoc);
+        Element tittle = document.select("title").first();
+        Element content = document.select("div[class=zm-editable-content]").first();
+        //保证title和content不为空
+        String wordLen = "<wordLength>" + (((tittle == null) ? 0 : tittle.text().replace(" ", "").length()) +
+                ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
         Elements links = document.select("script");
         for (int i = 0; i < links.size(); i++) {
             if (links.get(i).attr("data-reactid").equals("21")) {
@@ -191,6 +202,19 @@ public class Downloader {
         htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
         bfWriter.write(htmlDoc);//IOException
 
+        //html数据头部分，放在尾部
+        bfWriter.newLine();
+        bfWriter.write(versionStr);//所有writeIOException
+        bfWriter.newLine();
+        bfWriter.write(URLStr);
+        bfWriter.newLine();
+        bfWriter.write(dateStr);
+        bfWriter.newLine();
+        bfWriter.write(IPStr);
+        bfWriter.newLine();
+        bfWriter.write(htmlLen);
+        bfWriter.newLine();
+        bfWriter.write(wordLen);
         bfWriter.flush();//IOException
 
 

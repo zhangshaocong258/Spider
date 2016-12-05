@@ -1,6 +1,7 @@
 package core.spider;
 
 import core.util.Config;
+import core.util.RedisSet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,6 +22,7 @@ public class HtmlParserTool {
         Elements links = doc.select("a[href]");
         for (Element link : links) {
             String absHref = link.attr("abs:href");
+            //判断是否存入Redis，原来是(Config.redisEnable ? !RedisSet.visitedUrlContains(absHref) : true))，简化后如下，insert已经判断，不要了
             if (!absHref.equals("") && accept(absHref) && !fobidden(absHref)) {
                 newUrl.add(absHref);
             }

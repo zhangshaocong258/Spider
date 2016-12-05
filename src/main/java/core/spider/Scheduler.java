@@ -2,6 +2,8 @@ package core.spider;
 
 import core.util.LinkQueue;
 import core.util.Config;
+import core.util.RedisSet;
+
 import java.util.*;
 
 /**
@@ -18,17 +20,16 @@ public class Scheduler {
             try {
                 if (!LinkQueue.unVisitedUrlsEmpty()) {
                     String url = LinkQueue.getUnVisitedUrl().get(0);
+                    LinkQueue.removeUnvisitedUrl(url);
                     //判断要爬取的url是否已经爬过，若爬过，则进行下一次循环
                     //保证VisitedUrl与最后生成的doc一致，目前超时则放入待爬取队列尾端，若还是连接失败，继续放至尾端
                     //并且保证此URL合法，因为添加URL的时候LinkQueue已经做了处理，除非初始URL有问题
                     if (!LinkQueue.getVisitedUrl().contains(url)) {
-                        LinkQueue.addVisitedUrl(url);//addUnvisititedUrl保证此时url不会错误
-                        LinkQueue.removeUnvisitedUrl(url);
+//                        LinkQueue.addVisitedUrl(url);//addUnvisititedUrl保证此时url不会错误
+                        return url;
                     } else {
-                        LinkQueue.removeUnvisitedUrl(url);
                         continue;
                     }
-                    return url;
                 } else {
                     threads--;
                     if (threads > 0) {
@@ -68,7 +69,6 @@ public class Scheduler {
                 !LinkQueue.getUnVisitedUrl().contains(url)) {
             LinkQueue.addUnvisititedUrl(url);
         }
-        LinkQueue.removeVisitedUrl(url);
     }
 
     public synchronized void insertNewURL(Set<String> newURL) {
@@ -104,5 +104,56 @@ public class Scheduler {
 //        }
 //    }
 
+    public synchronized String redisGetURL() {
+        while (true) {
+            try {
+                if (!RedisSet.unVisitedUrlsEmpty()) {
+                    String url = RedisSet.getUnvisitedUrl();
+                    if (!RedisSet.visitedUrlContains(url)) {
+                        return url;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    threads--;
+                    if (threads > 0) {
+                        wait();//InterruptedException
+                        threads++;
+                    } else {
+                        notifyAll();
+                        return null;
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //下载失败，重新添加回待爬取队列
+    public synchronized void redisRecallURL(String url) {
+        if (url != null && !url.trim().equals("") &&
+                !RedisSet.visitedUrlContains(url)) {
+            RedisSet.addUnvisititedUrl(url);
+        }
+    }
+
+    public synchronized void redisInsertNewURL(Set<String> newURL) {
+        for (String url : newURL) {
+            if (url != null && !url.trim().equals("") &&
+                    !RedisSet.visitedUrlContains(url)) {
+                RedisSet.addUnvisititedUrl(url);
+            }
+        }
+
+        //添加完毕后，如果URL队列不为空且线程少了，则唤起
+        if (!RedisSet.unVisitedUrlsEmpty() && threads < Config.thread_num) {
+            notifyAll();
+        }
+    }
+
+    public synchronized void redisInsertVisitedUrl(String url) {
+        RedisSet.addVisitedUrl(url);//下载成功再添加至访问过的set
+    }
 
 }
