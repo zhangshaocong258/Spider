@@ -1,8 +1,6 @@
 package core.spider;
 
 import core.util.Config;
-import core.util.LinkQueue;
-import core.util.RedisSet;
 
 import java.io.*;
 import java.util.*;
@@ -38,7 +36,6 @@ public class PageProcessor implements Callable {
                 try {
                     if (url != null) {
                         String html = Downloader.downloadPage(url);
-                        LinkQueue.addVisitedUrl(url);//下载成功再添加至访问过的set
                         if (html == null) {
                             continue;//相当于没有得到页面数据
                         }
@@ -49,25 +46,25 @@ public class PageProcessor implements Callable {
                         System.out.println("队列为空，结束");
                         break;
                     }
-    //            } catch (NullPointerException e) {
-    //                System.out.println("NullPointerException: " + count);
-    //                e.printStackTrace();
-    //            } catch (NoSuchElementException e) {
-    //                System.out.println("NoSuchElementException: " + count);
-    //                e.printStackTrace();
-    //            } catch (ConcurrentModificationException e) {
-    //                System.out.println("ConcurrentModificationException: " + count);
-    //                e.printStackTrace();
-    //            } catch (IndexOutOfBoundsException e) {
-    //                System.out.println("IndexOutOfBoundsException: " + count);
-    //                e.printStackTrace();
+                    //            } catch (NullPointerException e) {
+                    //                System.out.println("NullPointerException: " + count);
+                    //                e.printStackTrace();
+                    //            } catch (NoSuchElementException e) {
+                    //                System.out.println("NoSuchElementException: " + count);
+                    //                e.printStackTrace();
+                    //            } catch (ConcurrentModificationException e) {
+                    //                System.out.println("ConcurrentModificationException: " + count);
+                    //                e.printStackTrace();
+                    //            } catch (IndexOutOfBoundsException e) {
+                    //                System.out.println("IndexOutOfBoundsException: " + count);
+                    //                e.printStackTrace();
                 } catch (IOException e) {
                     //超时则添加到待爬取队列尾部，等待下一次爬取，若再次失败，继续...
                     scheduler.recallURL(url);
                     System.out.println("超时");
                     e.printStackTrace();
                 } catch (Exception e) {
-                    //捕获除了超时外的其他错误
+                    //捕获除了超时外的其他错误，
                     System.out.println("其他错误");
                     e.printStackTrace();
                 }
@@ -79,13 +76,13 @@ public class PageProcessor implements Callable {
             //获取url和下载数据，注意同步
             int count = 0;
             //每个线程提取100个网页
-            while (count++ < 2888) {
+            while (count++ < 10) {
                 String url = scheduler.redisGetURL();
                 try {
                     if (url != null) {
                         String html = Downloader.downloadPage(url);
 //                        RedisSet.addVisitedUrl(url);//下载成功再添加至访问过的set
-                        scheduler.redisInsertVisitedUrl(url);//同步冲突
+//                        scheduler.redisInsertVisitedUrl(url);//同步冲突，@Deprecated
                         if (html == null) {
                             continue;//相当于没有得到页面数据
                         }

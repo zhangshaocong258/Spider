@@ -1,7 +1,6 @@
 package core.spider;
 
 import core.util.Config;
-import core.util.RedisSet;
 
 /**
  * Created by zsc on 2016/11/23.

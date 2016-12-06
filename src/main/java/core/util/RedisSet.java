@@ -9,9 +9,6 @@ import redis.clients.jedis.Jedis;
 public class RedisSet {
     private static Jedis jedis = new Jedis(Config.redisIP, Config.redisPort);
 
-//    public static void getInstance() {
-//        jedis = new Jedis(Config.redisIP, Config.redisPort);
-//    }
 
     //队列初始化原始URLlist
     public static void initializeUrls(String url) {
@@ -28,10 +25,10 @@ public class RedisSet {
         jedis.sadd(Config.visitedUrl, url);
     }
 
-//    //移除未访问队列中的URL
-//    public static void removeUnvisitedUrl(String url) {
-//        jedis.srem(Config.unVisitedUrl, url);
-//    }
+    //移除访问队列中的URL
+    public static void removeVisitedUrl(String url) {
+        jedis.srem(Config.visitedUrl, url);
+    }
 
     //已经访问的URL队列是否包含
     public static boolean visitedUrlContains(String url) {

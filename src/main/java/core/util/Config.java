@@ -1,6 +1,9 @@
 package core.util;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -50,7 +53,7 @@ public class Config {
     /**
      * 爬虫入口
      */
-    public static String  startURL;
+    public static String startURL;
 
     /**
      * 网页限制
@@ -94,6 +97,11 @@ public class Config {
     public static String questionMark;
 
     /**
+     * people
+     */
+    public static String people;
+
+    /**
      * Redis配置
      */
 
@@ -130,12 +138,14 @@ public class Config {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         thread_num = Integer.valueOf(properties.getProperty("threadNum"));
         captcha = properties.getProperty("captcha");
         account = properties.getProperty("account");
         password = properties.getProperty("password");
         cookiePath = properties.getProperty("cookies");
-        downloadPath = properties.getProperty("download");
+        downloadPath = properties.getProperty("download") + "-" + sdf.format(date);//加上时间
         startURL = properties.getProperty("startURL");
         domainName = properties.getProperty("domainName");
         logout = properties.getProperty("logout");
@@ -145,6 +155,7 @@ public class Config {
         copyright = properties.getProperty("copyright");
         symbol = properties.getProperty("symbol");
         questionMark = properties.getProperty("questionMark");
+        people = properties.getProperty("people");
         redisEnable = Boolean.valueOf(properties.getProperty("redisEnable"));
         redisIP = properties.getProperty("redisIP");
         redisPort = Integer.valueOf(properties.getProperty("redisPort"));

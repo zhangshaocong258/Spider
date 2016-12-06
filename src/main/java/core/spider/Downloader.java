@@ -176,30 +176,25 @@ public class Downloader {
 
         String htmlLen = "<length>" + htmlDoc.length() + "</length>";
 
-        //数据头部分
-//        bfWriter.write(versionStr);//所有writeIOException
-//        bfWriter.write(URLStr);
-//        bfWriter.write(dateStr);
-//        bfWriter.write(IPStr);
-//        bfWriter.write(htmlLen);
-//        bfWriter.newLine();
 
-        //数据部分
-        Document document = Jsoup.parse(htmlDoc);
-        Element tittle = document.select("title").first();
-        Element content = document.select("div[class=zm-editable-content]").first();
-        //保证title和content不为空
-        String wordLen = "<wordLength>" + (((tittle == null) ? 0 : tittle.text().replace(" ", "").length()) +
-                ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
-        Elements links = document.select("script");
-        for (int i = 0; i < links.size(); i++) {
-            if (links.get(i).attr("data-reactid").equals("21")) {
-                links.get(i).remove();
-            }
+        //数据部分，只删除people中的script，尽量保留原html
+        if (url.startsWith(Config.people)) {
+            Document document = Jsoup.parse(htmlDoc);
+//            Element tittle = document.select("title").first();
+//            Element content = document.select("div[class=zm-editable-content]").first();
+            //保证title和content不为空，@Deprecated
+//            String wordLen = "<wordLength>" + (((tittle == null) ? 0 : tittle.text().replace(" ", "").length()) +
+//                    ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
+            Elements links = document.select("script");
+            for (int i = 0; i < links.size(); i++) {
+                if (links.get(i).attr("data-reactid").equals("21")) {
+                    links.get(i).remove();
+                }
 //                links.get(i).removeAttr("src");
 //                System.out.println("script: " + links.get(i).toString());
+            }
+            htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
         }
-        htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
         bfWriter.write(htmlDoc);//IOException
 
         //html数据头部分，放在尾部
@@ -213,8 +208,8 @@ public class Downloader {
         bfWriter.write(IPStr);
         bfWriter.newLine();
         bfWriter.write(htmlLen);
-        bfWriter.newLine();
-        bfWriter.write(wordLen);
+//        bfWriter.newLine();
+//        bfWriter.write(wordLen);
         bfWriter.flush();//IOException
 
 
