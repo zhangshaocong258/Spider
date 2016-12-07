@@ -36,7 +36,9 @@ public class Spider {
     public void start(String url) {
         //初始化URL表
         if (Config.redisEnable) {
-            RedisSet.initializeUrls(url);
+            if (RedisSet.unVisitedUrlsEmpty() && RedisSet.visitedUrlsEmpty()) {
+                RedisSet.initializeUrls(url);
+            }
         } else {
             LinkQueue.initializeUrls(url);
         }
@@ -74,11 +76,13 @@ public class Spider {
                 threadPool.shutdown();
             }
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
+        //报错
         if (Config.redisEnable) {
             RedisSet.save();
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
+
 
     }
 

@@ -107,7 +107,10 @@ public class Scheduler {
 //        }
 //    }
 
-    //Redis
+    /**
+     * Redis操作
+     * @return
+     */
     public synchronized String redisGetURL() {
         while (true) {
             try {

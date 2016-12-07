@@ -7,7 +7,7 @@ import redis.clients.jedis.Jedis;
  * Created by zsc on 2016/12/4.
  */
 public class RedisSet {
-    private static Jedis jedis = new Jedis(Config.redisIP, Config.redisPort);
+    private static Jedis jedis = new Jedis(Config.redisIP, Config.redisPort, 100000);
 
 
     //队列初始化原始URLlist
@@ -42,7 +42,12 @@ public class RedisSet {
 
     //判断未访问的URL队列是否为空
     public static boolean unVisitedUrlsEmpty() {
-        return (jedis.llen(Config.unVisitedUrl) == 0l);
+        return jedis.llen(Config.unVisitedUrl) == 0l;
+    }
+
+    //判断访问过的URL队列是否为空
+    public static boolean visitedUrlsEmpty() {
+        return jedis.scard(Config.visitedUrl) == 0l;
     }
 
     public static void save() {
