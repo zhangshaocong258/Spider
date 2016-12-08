@@ -76,13 +76,13 @@ public class Spider {
                 threadPool.shutdown();
             }
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
-        //报错
+
+        //超过2s，报错
         if (Config.redisEnable) {
             RedisSet.save();
         }
-
+        long endTime = System.currentTimeMillis();
+        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
 
     }
 
