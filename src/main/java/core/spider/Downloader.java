@@ -2,28 +2,24 @@ package core.spider;
 
 import core.util.Config;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zsc on 2016/8/13.
@@ -36,9 +32,9 @@ public class Downloader {
     }
 
     //连接网站，下载页面
-    public static String downloadPage(String url) throws IOException {
+    public static String downloadPage(String str) throws IOException {
         String htmlDoc = null;
-
+        String url = new StringBuilder().append(Config.domainName).append(str).toString();
         CloseableHttpClient httpClient = HttpClientTool.getInstance().getCloseableHttpClient();
         HttpClientContext context = HttpClientTool.getInstance().getHttpClientContext();
         HttpGet httpGet = new HttpGet(url);//get就可以，只要有context就行
@@ -55,7 +51,7 @@ public class Downloader {
         HttpEntity httpEntity = response.getEntity();
         StatusLine statusLine = response.getStatusLine();
 
-        //如果是转移，然后？？？
+        //如果是转移，然后？？？，知乎people answer重定向了艹！！！
 //            if (statusLine.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY ||
 //                    statusLine.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY ||
 //                    statusLine.getStatusCode() == HttpStatus.SC_SEE_OTHER ||
@@ -81,11 +77,55 @@ public class Downloader {
 //                htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
                 String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
                 System.out.println("filename: " + filename);
-                saveDoc(url, filename, htmlDoc);
+                if (formatDoc(url)) {
+                    saveDoc(url, filename, htmlDoc);
+                }
             }
         }
         response.close();//关闭，报错IOException
         return htmlDoc;
+    }
+
+    private static boolean formatDoc(String url) {
+        boolean p = false;
+        boolean o = false;
+        Pattern question = Pattern.compile("^(https://www.zhihu.com/question/([0-9]+$))");//只要问题，不要单个答案
+        Pattern people = Pattern.compile("^(https://www.zhihu.com/people/(.*))");//只要people，后面去除后面的
+        Pattern collection = Pattern.compile("^(https://www.zhihu.com/collection/([0-9]+$))");//只要收藏，同question
+        Pattern topic = Pattern.compile("^(https://www.zhihu.com/topic/([0-9]+$))");//只要话题，同上
+        Pattern roundTable = Pattern.compile("^(https://www.zhihu.com/roundtable/(.*))");//全要
+        Pattern org = Pattern.compile("^(https://www.zhihu.com/org/(.*))");//同people
+        Pattern publications = Pattern.compile("^(https://www.zhihu.com/publications/(.*))");//全要
+
+        Matcher questionMatcher = question.matcher(url);
+        Matcher peopleMatcher = people.matcher(url);
+        Matcher collectionMatcher = collection.matcher(url);
+        Matcher topicMatcher = topic.matcher(url);
+        Matcher roundTableMatcher = roundTable.matcher(url);
+        Matcher orgMatcher = org.matcher(url);
+        Matcher publicationsMatcher = publications.matcher(url);
+
+        //正则不好判断，分两次判断，判断后面有没有/
+        if (peopleMatcher.matches()) {
+            if (!url.substring(29).contains("/")) {
+                p = true;
+            }
+        }
+
+        if (orgMatcher.matches()) {
+            if (!url.substring(26).contains("/")) {
+                o = true;
+            }
+        }
+
+        if ((questionMatcher.matches() || p || collectionMatcher.matches()
+                || topicMatcher.matches() || roundTableMatcher.matches() || o || publicationsMatcher.matches())
+                && url.startsWith(Config.domainName) ) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     //得到html后缀，将url中的/替换为_，否则保存文件出错
@@ -187,9 +227,9 @@ public class Downloader {
 //                    ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
             Elements links = document.select("script");
             for (int i = 0; i < links.size(); i++) {
-                if (links.get(i).attr("data-reactid").equals("21")) {
+//                if (links.get(i).attr("data-reactid").equals("23") || links.get(i).attr("data-reactid").equals("21")) {
                     links.get(i).remove();
-                }
+//                }
 //                links.get(i).removeAttr("src");
 //                System.out.println("script: " + links.get(i).toString());
             }

@@ -5,8 +5,6 @@ import core.util.Config;
 import core.util.RedisSet;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by zsc on 2016/8/13.
@@ -114,10 +112,10 @@ public class Scheduler {
     public synchronized String redisGetURL() {
         while (true) {
             try {
-                if (!RedisSet.unVisitedUrlsEmpty()) {
+                if (!RedisSet.unVisitedUrlsEmpty()) {//取出并删除
                     String url = RedisSet.getUnvisitedUrl();
                     if (!RedisSet.visitedUrlContains(url)) {
-                        RedisSet.addVisitedUrl(url);
+                        RedisSet.addVisitedUrl(url);//添加至已访问
                         return url;
                     } else {
                         continue;

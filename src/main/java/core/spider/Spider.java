@@ -57,7 +57,7 @@ public class Spider {
 
         long startTime = System.currentTimeMillis();
         System.out.println("采集开始");
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
+        ExecutorService threadPool = Executors.newFixedThreadPool(20);//这个不变，线程20个位置，把所有线程往里面扔
         ArrayList<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
         for (int i = 0; i < Config.thread_num; i++) {
             PageProcessor pageProcessor = new PageProcessor(scheduler);
@@ -77,35 +77,14 @@ public class Spider {
             }
         }
 
+        long endTime = System.currentTimeMillis();
+        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
         //超过2s，报错
         if (Config.redisEnable) {
             RedisSet.save();
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
+        System.out.println("保存结束,时间： " + (endTime - startTime) + "ms");
 
     }
 
-
-//    public static void main(String[] args) {
-//        List<String> urls = new ArrayList<String>();
-//
-//        //urls.add(new URL("http://ast.nlsde.buaa.edu.cn/"));
-//        //urls.add(new URL("http://www.baidu.com"));
-//        //urls.add(new URL("http://www.google.com"));
-//        //urls.add(new URL("http://www.sohu.com"));
-//        urls.add(Config.startURL);
-////        urls.add("http://www.sina.com");
-////        urls.add(new URL("http://edu.sina.com.cn/"));
-////        urls.add(new URL("http://edu.163.com/"));
-////        urls.add(new URL("http://ast.nlsde.buaa.edu.cn/"));
-//        //urls.add(new URL("http://www.chsi.com.cn/"));
-//        //urls.add(new URL("http://www.eol.cn/"));
-//        //urls.add(new URL("http://www.edutv.net.cn/"));
-//
-//
-//        Spider spider = new Spider(urls);
-//        spider.start();
-//
-//    }
 }

@@ -1,13 +1,16 @@
 package core.spider;
 
+import org.apache.http.HttpHost;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BestMatchSpecFactory;
 import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
 
@@ -35,13 +38,19 @@ public class HttpClientTool {
     }
 
     private void setCloseableHttpClient() {
-        //建造者模式，设置超时，设置cookie
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();//连接池，不设置会非常慢，艹！！！
+        cm.setMaxTotal(20);
+        cm.setDefaultMaxPerRoute(20);//设置全部路由的默认大小
+//        HttpHost localhost = new HttpHost("locahost", 80);
+//        cm.setMaxPerRoute(new HttpRoute(localhost), 50);//设置单个路由大小，更改localhost
+
+        //建造者模式，设置超时，多线程设为10s，长一点，艹！！！设置cookie
         RequestConfig globalConfig = RequestConfig.custom().
-                setSocketTimeout(5000).
-                setConnectTimeout(3000).
+                setSocketTimeout(10000).
+                setConnectTimeout(10000).
                 setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY).build();
         this.closeableHttpClient = HttpClients.custom().
-                setDefaultRequestConfig(globalConfig).build();
+                setDefaultRequestConfig(globalConfig).setConnectionManager(cm).build();
     }
 
     private void setHttpClientContext() {
