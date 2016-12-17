@@ -89,18 +89,19 @@ public class Downloader {
     private static boolean formatDoc(String url) {
         boolean p = false;
         boolean o = false;
+        boolean r = false;
         Pattern question = Pattern.compile("^(https://www.zhihu.com/question/([0-9]+$))");//只要问题，不要单个答案
-        Pattern people = Pattern.compile("^(https://www.zhihu.com/people/(.*))");//只要people，后面去除后面的
         Pattern collection = Pattern.compile("^(https://www.zhihu.com/collection/([0-9]+$))");//只要收藏，同question
         Pattern topic = Pattern.compile("^(https://www.zhihu.com/topic/([0-9]+$))");//只要话题，同上
-        Pattern roundTable = Pattern.compile("^(https://www.zhihu.com/roundtable/(.*))");//全要
+        Pattern people = Pattern.compile("^(https://www.zhihu.com/people/(.*))");//只要people，后面去除后面的
+        Pattern roundTable = Pattern.compile("^(https://www.zhihu.com/roundtable/(.*))");//同people
         Pattern org = Pattern.compile("^(https://www.zhihu.com/org/(.*))");//同people
         Pattern publications = Pattern.compile("^(https://www.zhihu.com/publications/(.*))");//全要
 
         Matcher questionMatcher = question.matcher(url);
-        Matcher peopleMatcher = people.matcher(url);
         Matcher collectionMatcher = collection.matcher(url);
         Matcher topicMatcher = topic.matcher(url);
+        Matcher peopleMatcher = people.matcher(url);
         Matcher roundTableMatcher = roundTable.matcher(url);
         Matcher orgMatcher = org.matcher(url);
         Matcher publicationsMatcher = publications.matcher(url);
@@ -118,8 +119,14 @@ public class Downloader {
             }
         }
 
+        if (roundTableMatcher.matches()) {
+            if (!url.substring(33).contains("/")) {
+                r = true;
+            }
+        }
+
         if ((questionMatcher.matches() || p || collectionMatcher.matches()
-                || topicMatcher.matches() || roundTableMatcher.matches() || o || publicationsMatcher.matches())
+                || topicMatcher.matches() || r || o || publicationsMatcher.matches())
                 && url.startsWith(Config.domainName) ) {
             return true;
         }
