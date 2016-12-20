@@ -204,7 +204,29 @@ public class Downloader {
      * @param htmlDoc  保存html内容到.html文件中 Done
      */
     private static void saveDoc(String url, String fileName, String htmlDoc) throws IOException {
-
+        //数据部分，只删除people中的script，尽量保留原html，放在前面
+        if (url.startsWith(Config.people)) {
+            Document document = Jsoup.parse(htmlDoc);
+            int followers = Integer.valueOf(document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());
+            if (followers < 100) {
+//                System.out.println("没有关注者");
+                return;
+            }
+//            Element tittle = document.select("title").first();
+//            Element content = document.select("div[class=zm-editable-content]").first();
+            //保证title和content不为空，@Deprecated
+//            String wordLen = "<wordLength>" + (((tittle == null) ? 0 : tittle.text().replace(" ", "").length()) +
+//                    ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
+            Elements links = document.select("script");
+            for (int i = 0; i < links.size(); i++) {
+//                if (links.get(i).attr("data-reactid").equals("23") || links.get(i).attr("data-reactid").equals("21")) {
+                links.get(i).remove();
+//                }
+//                links.get(i).removeAttr("src");
+//                System.out.println("script: " + links.get(i).toString());
+            }
+            htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
+        }
 
         BufferedWriter bfWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Config.downloadPath +
                 File.separator + fileName), CHARSET));//IOException
@@ -223,25 +245,6 @@ public class Downloader {
 
         String htmlLen = "<length>" + htmlDoc.length() + "</length>";
 
-
-        //数据部分，只删除people中的script，尽量保留原html
-        if (url.startsWith(Config.people)) {
-            Document document = Jsoup.parse(htmlDoc);
-//            Element tittle = document.select("title").first();
-//            Element content = document.select("div[class=zm-editable-content]").first();
-            //保证title和content不为空，@Deprecated
-//            String wordLen = "<wordLength>" + (((tittle == null) ? 0 : tittle.text().replace(" ", "").length()) +
-//                    ((content == null) ? 0 : content.text().replace(" ", "").length())) + "</wordLength>";
-            Elements links = document.select("script");
-            for (int i = 0; i < links.size(); i++) {
-//                if (links.get(i).attr("data-reactid").equals("23") || links.get(i).attr("data-reactid").equals("21")) {
-                    links.get(i).remove();
-//                }
-//                links.get(i).removeAttr("src");
-//                System.out.println("script: " + links.get(i).toString());
-            }
-            htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
-        }
         bfWriter.write(htmlDoc);//IOException
 
         //html数据头部分，放在尾部
@@ -258,6 +261,7 @@ public class Downloader {
 //        bfWriter.newLine();
 //        bfWriter.write(wordLen);
         bfWriter.flush();//IOException
+        bfWriter.close();
 
 
     }
