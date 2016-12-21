@@ -207,10 +207,16 @@ public class Downloader {
         //数据部分，只删除people中的script，尽量保留原html，放在前面
         if (url.startsWith(Config.people)) {
             Document document = Jsoup.parse(htmlDoc);
-            int followers = Integer.valueOf(document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());
-            if (followers < 100) {
-//                System.out.println("没有关注者");
+            String followersStr = document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text();
+            if (followersStr.trim().equals("")) {
+                System.out.println("为空url " + url);
                 return;
+            } else {
+                int followers = Integer.valueOf(followersStr);
+                if (followers < 100) {
+//                System.out.println("没有关注者");
+                    return;
+                }
             }
 //            Element tittle = document.select("title").first();
 //            Element content = document.select("div[class=zm-editable-content]").first();
