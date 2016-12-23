@@ -207,7 +207,10 @@ public class Downloader {
         //数据部分，只删除people中的script，尽量保留原html，放在前面
         if (url.startsWith(Config.people)) {
             Document document = Jsoup.parse(htmlDoc);
-            String followersStr = document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text();
+            String followersStr = document.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text();
+            if (followersStr.trim().equals("")) {
+                followersStr = document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text();
+            }
             if (followersStr.trim().equals("")) {
                 System.out.println("为空url " + url);
                 return;

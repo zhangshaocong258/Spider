@@ -31,7 +31,7 @@ public class PageProcessor implements Callable {
             //获取url和下载数据，注意同步
             int count = 0;
             //每个线程提取100个网页
-            while (count++ < 2) {
+            while (count++ < 1) {
                 String str = scheduler.getURL();
                 try {
                     if (str != null) {
