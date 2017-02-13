@@ -4,6 +4,9 @@ import core.util.Config;
 
 /**
  * Created by zsc on 2016/11/23.
+ * 只爬取特定（单个）网页时，start内输入网页名，去除主域名www.zhihu.com
+ * config中threadNum=1，redisEnable=false
+ * 下载页面注意people的关注数默认大于100才下载
  */
 public class Main {
     public static void main(String[] args) {
