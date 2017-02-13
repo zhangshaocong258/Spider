@@ -36,6 +36,7 @@ public class Spider {
     public void start(String url) {
         //初始化URL表
         if (Config.redisEnable) {
+            System.out.println("redis");
             if (RedisSet.unVisitedUrlsEmpty() && RedisSet.visitedUrlsEmpty()) {
                 RedisSet.initializeUrls(url);
             }

@@ -95,7 +95,7 @@ public class PageProcessor implements Callable {
                 } catch (IOException e) {
                     //超时则添加到待爬取队列尾部，等待下一次爬取，若再次失败，继续...
                     scheduler.redisRecallURL(str);
-                    System.out.println("超时");
+                    System.out.println("超时" + str);
                     e.printStackTrace();
                 } catch (Exception e) {
                     //捕获除了超时外的其他错误
