@@ -99,7 +99,7 @@ public class PageProcessor implements Callable {
                     e.printStackTrace();
                 } catch (Exception e) {
                     //捕获除了超时外的其他错误
-                    scheduler.recallURL(str);
+                    scheduler.redisRecallURL(str);
                     System.out.println("其他错误");
                     e.printStackTrace();
                 }
