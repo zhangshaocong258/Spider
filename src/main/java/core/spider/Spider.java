@@ -37,7 +37,8 @@ public class Spider {
         //初始化URL表
         if (Config.redisEnable) {
             System.out.println("redis");
-            if (RedisSet.unVisitedUrlsEmpty() && RedisSet.visitedUrlsEmpty()) {
+            //只看待爬取队列是否为空
+            if (RedisSet.unVisitedUrlsEmpty()) {
                 RedisSet.initializeUrls(url);
             }
         } else {
