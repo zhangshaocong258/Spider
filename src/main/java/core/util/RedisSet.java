@@ -16,8 +16,13 @@ public class RedisSet {
     }
 
     //未访问队列新增URL
-    public static void addUnvisititedUrl(String url) {
+    public static void addUnvisitedUrl(String url) {
         jedis.lpush(Config.unVisitedUrl, url);
+    }
+
+    //未访问队列新增URL
+    public static void addTopicUnvisititedUrl(String url) {
+        jedis.lpush(Config.topicUnVisitedUrl, url);
     }
 
     //访问过的队列新增URL
@@ -40,9 +45,20 @@ public class RedisSet {
         return jedis.lpop(Config.unVisitedUrl);//返回并移除
     }
 
+    //得到未访问的URL队列的第一个URL
+    public static String getTopicUnvisitedUrl() {
+        return jedis.lpop(Config.topicUnVisitedUrl);//返回并移除
+    }
+
+
     //判断未访问的URL队列是否为空
     public static boolean unVisitedUrlsEmpty() {
         return jedis.llen(Config.unVisitedUrl) == 0l;
+    }
+
+    //判断未访问的URL队列是否为空
+    public static boolean unTopicVisitedUrlsEmpty() {
+        return jedis.llen(Config.topicUnVisitedUrl) == 0l;
     }
 
     //判断访问过的URL队列是否为空

@@ -37,7 +37,7 @@ public class LinkQueue {
     }
 
     //队列新增URL
-    public static void addUnvisititedUrl(String url) {
+    public static void addUnvisitedUrl(String url) {
         unVisitedUrl.add(url);
     }
 

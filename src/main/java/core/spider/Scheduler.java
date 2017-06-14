@@ -67,7 +67,7 @@ public class Scheduler {
         if (url != null && !url.trim().equals("") &&
                 !LinkQueue.getVisitedUrl().contains(url) &&
                 !LinkQueue.getUnVisitedUrl().contains(url)) {
-            LinkQueue.addUnvisititedUrl(url);
+            LinkQueue.addUnvisitedUrl(url);
         }
         LinkQueue.removeVisitedUrl(url);
     }
@@ -77,7 +77,7 @@ public class Scheduler {
             if (url != null && !url.trim().equals("") &&
                     !LinkQueue.getVisitedUrl().contains(url) &&
                     !LinkQueue.getUnVisitedUrl().contains(url)) {
-                LinkQueue.addUnvisititedUrl(url);
+                LinkQueue.addUnvisitedUrl(url);
             }
         }
 
@@ -95,7 +95,7 @@ public class Scheduler {
 //    public synchronized void insertNewURL(List<String> analyzedURL) {
 //        for (String url : analyzedURL) {
 //            if (!LinkQueue.getUnVisitedUrl().contains(url) && !LinkQueue.getUnVisitedUrl().contains(url)) {
-//                LinkQueue.addUnvisititedUrl(url);
+//                LinkQueue.addUnvisitedUrl(url);
 //            }
 //        }
 //
@@ -139,7 +139,7 @@ public class Scheduler {
     //下载失败，重新添加回待爬取队列
     public synchronized void redisRecallURL(String url) {
         if (url != null && !url.trim().equals("")) {
-            RedisSet.addUnvisititedUrl(url);
+            RedisSet.addUnvisitedUrl(url);
             RedisSet.removeVisitedUrl(url);
         }
     }
@@ -148,13 +148,42 @@ public class Scheduler {
         for (String url : newURL) {
             if (url != null && !url.trim().equals("") &&
                     !RedisSet.visitedUrlContains(url)) {
-                RedisSet.addUnvisititedUrl(url);
+                RedisSet.addUnvisitedUrl(url);
             }
         }
 
         //添加完毕后，如果URL队列不为空且线程少了，则唤起
         if (threads < Config.thread_num) {
             notifyAll();
+        }
+    }
+
+    //主题爬虫时添加url
+    public synchronized void redisInsertTopicURL(Set<String> newURL) {
+        for (String url : newURL) {
+            if (url != null && !url.trim().equals("")) {
+                RedisSet.addUnvisitedUrl(url);
+            }
+        }
+    }
+
+    //主题爬虫时出错处理
+    public synchronized void redisInsertErrorUnvisitedURL(String url) {
+        if (url != null && !url.trim().equals("")) {
+            RedisSet.addTopicUnvisititedUrl(url);
+        }
+    }
+
+
+    //主题爬虫再次爬取出错url
+    public synchronized String redisTopicGetURL() {
+        while (true) {
+            if (!RedisSet.unTopicVisitedUrlsEmpty()) {//取出并删除
+                String url = RedisSet.getTopicUnvisitedUrl();
+                return url;
+            } else {
+                return null;
+            }
         }
     }
 

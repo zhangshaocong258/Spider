@@ -11,11 +11,43 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zsc on 2016/11/4.
  */
 public class HtmlParserTool {
+
+    public static Set<String> extract10Links(String html, String baseUri){
+        Set<String> newUrl = new HashSet<String>();
+        Document doc = Jsoup.parse(html, baseUri);
+        Elements links = doc.select("a[href]");
+        for (Element link : links) {
+            String absHref = link.attr("abs:href");
+            if (!absHref.equals("") && accept(absHref) && filter(absHref)) {
+                System.out.println("str " + absHref);
+                newUrl.add(absHref.substring(21));//去掉前面的域名
+            }
+        }
+        return newUrl;
+    }
+
+    private static boolean filter(String url) {
+        Pattern question = Pattern.compile("^(https://www.zhihu.com/question/([0-9]+$))");
+        Pattern topic = Pattern.compile("^(https://www.zhihu.com/topic/([0-9]+$))");
+        Pattern people = Pattern.compile("^(https://www.zhihu.com/people/(.*))/answers");
+        Pattern org = Pattern.compile("^(https://www.zhihu.com/org/(.*))/answers");//同people
+
+        Matcher questionMatcher = question.matcher(url);
+        Matcher topicMatcher = topic.matcher(url);
+        Matcher peopleMatcher = people.matcher(url);
+        Matcher orgMatcher = org.matcher(url);
+
+        return questionMatcher.matches() || topicMatcher.matches() || peopleMatcher.matches() || orgMatcher.matches();
+
+    }
+
     public static Set<String> extractLinks(String html, String baseUri){
         Set<String> newUrl = new HashSet<String>();
         Document doc = Jsoup.parse(html, baseUri);

@@ -61,6 +61,11 @@ public class Config {
     public static String domainName;
 
     /**
+     * 仅获取url
+     */
+    public static Boolean topicCrawler;
+
+    /**
      * 登出
      */
     public static String logout;
@@ -130,6 +135,11 @@ public class Config {
      */
     public static String unVisitedUrl;
 
+    /**
+     * Redis errorUrl
+     */
+    public static String topicUnVisitedUrl;
+
 
     static {
         Properties properties = new Properties();
@@ -148,6 +158,7 @@ public class Config {
         downloadPath = properties.getProperty("download") + "-" + sdf.format(date);//加上时间
         startURL = properties.getProperty("startURL");
         domainName = properties.getProperty("domainName");
+        topicCrawler = Boolean.valueOf(properties.getProperty("topicCrawler"));
         logout = properties.getProperty("logout");
         inbox = properties.getProperty("inbox");
         settings = properties.getProperty("settings");
@@ -161,6 +172,7 @@ public class Config {
         redisPort = Integer.valueOf(properties.getProperty("redisPort"));
         visitedUrl = properties.getProperty("visitedUrl");
         unVisitedUrl = properties.getProperty("unVisitedUrl");
+        topicUnVisitedUrl = properties.getProperty("topicUnVisitedUrl");
 
     }
 
