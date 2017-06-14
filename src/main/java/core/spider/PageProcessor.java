@@ -39,9 +39,11 @@ public class PageProcessor implements Callable {
                         if (html == null) {
                             continue;//相当于没有得到页面数据
                         }
-                        //得到当前URL的html和host，用来生成html中的绝对路径
-                        Set<String> newStr = HtmlParserTool.extractLinks(html, Config.domainName);
-                        scheduler.insertNewURL(newStr);
+                        if (!Config.topicCrawler) {
+                            //得到当前URL的html和host，用来生成html中的绝对路径
+                            Set<String> newStr = HtmlParserTool.extractLinks(html, Config.domainName);
+                            scheduler.insertNewURL(newStr);
+                        }
                     } else {
                         System.out.println("队列为空，结束");
                         break;
@@ -85,9 +87,11 @@ public class PageProcessor implements Callable {
                         if (html == null) {
                             continue;//相当于没有得到页面数据
                         }
-                        //得到当前URL的html和host，用来生成html中的绝对路径
-                        Set<String> newStr = HtmlParserTool.extractLinks(html, Config.domainName);
-                        scheduler.redisInsertNewURL(newStr);
+                        if (!Config.topicCrawler) {
+                            //得到当前URL的html和host，用来生成html中的绝对路径
+                            Set<String> newStr = HtmlParserTool.extractLinks(html, Config.domainName);
+                            scheduler.redisInsertNewURL(newStr);
+                        }
                     } else {
                         System.out.println("队列为空，结束");
                         break;

@@ -107,6 +107,11 @@ public class Config {
     public static String people;
 
     /**
+     * peopleCount
+     */
+    public static int peopleCount;
+
+    /**
      * Redis配置
      */
 
@@ -167,6 +172,7 @@ public class Config {
         symbol = properties.getProperty("symbol");
         questionMark = properties.getProperty("questionMark");
         people = properties.getProperty("people");
+        peopleCount = Integer.valueOf(properties.getProperty("peopleCount"));
         redisEnable = Boolean.valueOf(properties.getProperty("redisEnable"));
         redisIP = properties.getProperty("redisIP");
         redisPort = Integer.valueOf(properties.getProperty("redisPort"));

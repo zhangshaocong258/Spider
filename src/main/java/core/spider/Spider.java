@@ -129,12 +129,12 @@ public class Spider {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("采集结束,程序运行时间： " + (endTime - startTime) + "ms");
+        System.out.println("Topic采集结束,程序运行时间： " + (endTime - startTime) + "ms");
         //超过2s，报错
         if (Config.redisEnable) {
             RedisSet.save();
         }
-        System.out.println("保存结束,时间： " + (endTime - startTime) + "ms");
+        System.out.println("Topic保存结束,时间： " + (endTime - startTime) + "ms");
 
     }
 

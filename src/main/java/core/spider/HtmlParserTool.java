@@ -26,6 +26,9 @@ public class HtmlParserTool {
         for (Element link : links) {
             String absHref = link.attr("abs:href");
             if (!absHref.equals("") && accept(absHref) && filter(absHref)) {
+                if (absHref.substring(22, 27).equals("topic")) {
+                    absHref = new StringBuilder().append(absHref).append("/hot").toString();
+                }
                 System.out.println("str " + absHref);
                 newUrl.add(absHref.substring(21));//去掉前面的域名
             }

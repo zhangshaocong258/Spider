@@ -114,7 +114,7 @@ public class Downloader {
 //                htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
                 String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
                 System.out.println("filename: " + filename);
-                if (formatDoc(url)) {
+                if (Config.topicCrawler || formatDoc(url)) {
                     saveDoc(url, filename, htmlDoc);
                 }
             }
@@ -242,20 +242,22 @@ public class Downloader {
      */
     private static void saveDoc(String url, String fileName, String htmlDoc) throws IOException {
         //数据部分，只删除people中的script，尽量保留原html，放在前面
-        if (url.startsWith(Config.people)) {
             Document document = Jsoup.parse(htmlDoc);
-            String followersStr = document.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text();
-            if (followersStr.trim().equals("")) {
-                followersStr = document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text();
-            }
-            if (followersStr.trim().equals("")) {
-                System.out.println("为空url " + url);
-                return;
-            } else {
-                int followers = Integer.valueOf(followersStr);
-                if (followers < 100) {
-//                System.out.println("没有关注者");
+
+            if (Config.peopleCount > 0) {
+                String followersStr = document.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text();
+                if (followersStr.trim().equals("")) {
+                    followersStr = document.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text();
+                }
+                if (followersStr.trim().equals("")) {
+                    System.out.println("为空url " + url);
                     return;
+                } else {
+                    int followers = Integer.valueOf(followersStr);
+                    if (followers < Config.peopleCount) {
+    //                System.out.println("没有关注者");
+                        return;
+                    }
                 }
             }
 //            Element tittle = document.select("title").first();
@@ -272,7 +274,7 @@ public class Downloader {
 //                System.out.println("script: " + links.get(i).toString());
             }
             htmlDoc = document.html();//保证保存的html没有script，而返回的htmlDoc有script
-        }
+
 
         BufferedWriter bfWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Config.downloadPath +
                 File.separator + fileName), CHARSET));//IOException
