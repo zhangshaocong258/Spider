@@ -3,6 +3,7 @@ package core.spider;
 import core.util.Config;
 
 import java.io.*;
+import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -85,23 +86,34 @@ public class PageProcessor implements Callable {
                     if (str != null) {
                         String html = Downloader.downloadPage(str);
                         if (html == null) {
-                            continue;//相当于没有得到页面数据
+                            scheduler.redisRecallURL(str);
+                            System.out.println("返回410");
+                            break;//相当于没有得到页面数据
                         }
                         if (!Config.topicCrawler) {
                             //得到当前URL的html和host，用来生成html中的绝对路径
                             Set<String> newStr = HtmlParserTool.extractLinks(html, Config.domainName);
                             scheduler.redisInsertNewURL(newStr);
                         }
+                        scheduler.redisAddVisitedURL(str);//下载成功后再入队列
                     } else {
                         System.out.println("队列为空，结束");
                         break;
                     }
-                } catch (IOException e) {
-                    //超时则添加到待爬取队列尾部，等待下一次爬取，若再次失败，继续...
-                    scheduler.redisRecallURL(str);
-                    System.out.println("超时" + str);
-                    e.printStackTrace();
-                } catch (Exception e) {
+
+                }
+//                catch (SocketException e) {
+//                    //超时则添加到待爬取队列尾部，等待下一次爬取，若再次失败，继续...
+//                    scheduler.redisRecallURL(str);
+//                    System.out.println("SocketException " + str);
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    //超时则添加到待爬取队列尾部，等待下一次爬取，若再次失败，继续...
+//                    scheduler.redisRecallURL(str);
+//                    System.out.println("超时 " + str);
+//                    e.printStackTrace();
+//                }
+                catch (Exception e) {
                     //捕获除了超时外的其他错误
                     scheduler.redisRecallURL(str);
                     System.out.println("其他错误");

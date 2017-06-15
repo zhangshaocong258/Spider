@@ -10,6 +10,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -70,6 +71,7 @@ public class Downloader {
 
     //连接网站，下载页面
     public static String downloadPage(String str) throws IOException {
+        InputStream inputStream = null;
         String htmlDoc = null;
         String url = new StringBuilder().append(Config.domainName).append(str).toString();
         CloseableHttpClient httpClient = HttpClientTool.getInstance().getCloseableHttpClient();
@@ -104,23 +106,42 @@ public class Downloader {
 //                }
 //            }
 
-        //连接成功
-        if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-            if (httpEntity == null) {
-                throw new ClientProtocolException("Response contains no content");
-            } else {
-                InputStream inputStream = httpEntity.getContent();//报错IOException
-                htmlDoc = IOUtils.toString(inputStream);//得到html内容，是否为空已判断！！！！！可用下面的方式
-//                htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
-                String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
-                System.out.println("filename: " + filename);
-                if (Config.topicCrawler || formatDoc(url)) {
-                    saveDoc(url, filename, htmlDoc);
+//        System.out.println("state " + statusLine.getStatusCode());
+        try {
+            //连接成功
+            if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                if (httpEntity == null) {
+                    throw new ClientProtocolException("Response contains no content");
+                } else {
+                    inputStream = httpEntity.getContent();//报错IOException
+                    htmlDoc = IOUtils.toString(inputStream);//得到html内容，是否为空已判断！！！！！可用下面的方式
+//                    htmlDoc = EntityUtils.toString(httpEntity);//httpGet直接得到html，post得到json
+                    String filename = getFilenameByUrl(url, httpEntity.getContentType().getValue());
+                    System.out.println("filename: " + filename);
+                    if (Config.topicCrawler || formatDoc(url)) {
+                        saveDoc(url, filename, htmlDoc);
+                    }
                 }
+            } else if (statusLine.getStatusCode() == 410) {
+                System.out.println("返回410" + str);
+                return htmlDoc;
             }
+            else {
+                throw new Exception("未连接成功");
+            }
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (response != null) {
+                EntityUtils.consume(httpEntity);//关闭，报错IOException
+                response.close();
+            }
+            httpGet.releaseConnection();
+            return htmlDoc;
+
         }
-        response.close();//关闭，报错IOException
-        return htmlDoc;
+//        return htmlDoc;
     }
 
     private static boolean formatDoc(String url) {

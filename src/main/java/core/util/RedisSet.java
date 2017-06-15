@@ -12,12 +12,12 @@ public class RedisSet {
 
     //队列初始化原始URLlist
     public static void initializeUrls(String url) {
-        jedis.lpush(Config.unVisitedUrl, url);
+        jedis.rpush(Config.unVisitedUrl, url);
     }
 
     //未访问队列新增URL
     public static void addUnvisitedUrl(String url) {
-        jedis.lpush(Config.unVisitedUrl, url);
+        jedis.rpush(Config.unVisitedUrl, url);
     }
 
     //未访问队列新增URL

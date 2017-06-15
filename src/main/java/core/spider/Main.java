@@ -19,6 +19,7 @@ public class Main {
             topicCrawler(content);
         }
         Spider.getInstance().start(Config.startURL);
+        HttpClientTool.getInstance().closeClient();
     }
 
     private static void topicCrawler(String[] content) {
