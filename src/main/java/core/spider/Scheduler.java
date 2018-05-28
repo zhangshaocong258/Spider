@@ -113,12 +113,16 @@ public class Scheduler {
         RedisSet.addVisitedUrl(url);
     }
 
+    public synchronized void redisAdd410URL(String url){
+        RedisSet.add410Url(url);
+    }
+
     public synchronized String redisGetURL() {
         while (true) {
             try {
                 if (!RedisSet.unVisitedUrlsEmpty()) {//取出并删除
                     String url = RedisSet.getUnvisitedUrl();
-                    if (!RedisSet.visitedUrlContains(url)) {
+                    if (!RedisSet.visitedUrlContains(url) && !RedisSet.F10UrlContains(url)) {
 //                        RedisSet.addVisitedUrl(url);//添加至已访问
                         return url;
                     } else {

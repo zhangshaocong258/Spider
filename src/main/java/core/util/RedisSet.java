@@ -22,7 +22,7 @@ public class RedisSet {
 
     //未访问队列新增URL
     public static void addTopicUnvisititedUrl(String url) {
-        jedis.lpush(Config.topicUnVisitedUrl, url);
+        jedis.rpush(Config.topicUnVisitedUrl, url);
     }
 
     //访问过的队列新增URL
@@ -30,9 +30,19 @@ public class RedisSet {
         jedis.sadd(Config.visitedUrl, url);
     }
 
+    //访问过的队列新增URL
+    public static void add410Url(String url) {
+        jedis.sadd("410Url", url);
+    }
+
     //移除访问队列中的URL
     public static void removeVisitedUrl(String url) {
         jedis.srem(Config.visitedUrl, url);
+    }
+
+    //已经访问的URL队列是否包含
+    public static boolean F10UrlContains(String url) {
+        return jedis.sismember("410Url", url);
     }
 
     //已经访问的URL队列是否包含

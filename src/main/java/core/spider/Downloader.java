@@ -36,6 +36,7 @@ public class Downloader {
     //连接网站，下载页面
     public static String downloadTopicPage(String str) throws IOException {
         String htmlDoc = null;
+        InputStream inputStream = null;
         String url = new StringBuilder().append(Config.domainName).append(str).toString();
         CloseableHttpClient httpClient = HttpClientTool.getInstance().getCloseableHttpClient();
         HttpClientContext context = HttpClientTool.getInstance().getHttpClientContext();
@@ -56,17 +57,32 @@ public class Downloader {
         HttpEntity httpEntity = response.getEntity();
         StatusLine statusLine = response.getStatusLine();
 
-        //连接成功
-        if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-            if (httpEntity == null) {
-                throw new ClientProtocolException("Response contains no content");
+        try {
+            //连接成功
+            if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                if (httpEntity == null) {
+                    throw new ClientProtocolException("Response contains no content");
+                } else {
+                    inputStream = httpEntity.getContent();//报错IOException
+                    htmlDoc = IOUtils.toString(inputStream).replaceAll("\\\\", "");
+                }
+            } else if (statusLine.getStatusCode() == 410) {
+                System.out.println("返回410 " + str);
+                return htmlDoc;
             } else {
-                InputStream inputStream = httpEntity.getContent();//报错IOException
-                htmlDoc = IOUtils.toString(inputStream).replaceAll("\\\\", "");
+                throw new Exception("未连接成功");
             }
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (response != null) {
+                EntityUtils.consume(httpEntity);//关闭，报错IOException
+                response.close();
+            }
+            httpGet.releaseConnection();
+            return htmlDoc;
         }
-        response.close();//关闭，报错IOException
-        return htmlDoc;
     }
 
     //连接网站，下载页面
@@ -84,7 +100,22 @@ public class Downloader {
 //                setConnectTimeout(3000).build();
 //        httpGet.setConfig(requestConfig);
 
-
+//        try {
+//            Thread.sleep(3000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.9.3.1000 Chrome/39.0.2146.0 Safari/537.36";
+        httpGet.addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        httpGet.addHeader("Accept-Encoding", "gzip,deflate");
+        httpGet.addHeader("Accept-Language", "zh-CN");
+        httpGet.addHeader("Cache-Control", "max-age=0");
+        httpGet.addHeader("Connection", "keep-alive");
+        httpGet.addHeader("DNT", "1");
+        httpGet.addHeader("Host", "www.zhihu.com");
+        httpGet.addHeader("X-DevTools-Emulate-Network-Conditions-Client-Id", "2B6A43DC-92F8-4FFA-84DB-536D8715B400");
+        httpGet.setHeader("User-Agent",userAgent);
+        httpGet.setHeader("Referer", url);
         CloseableHttpResponse response = httpClient.execute(httpGet, context);//超时报错IOException，还报其他错
 
         HttpEntity httpEntity = response.getEntity();
@@ -124,7 +155,8 @@ public class Downloader {
                 }
             } else if (statusLine.getStatusCode() == 410) {
                 System.out.println("返回410" + str);
-                return htmlDoc;
+                htmlDoc = "410";
+//                return htmlDoc;
             }
             else {
                 throw new Exception("未连接成功");

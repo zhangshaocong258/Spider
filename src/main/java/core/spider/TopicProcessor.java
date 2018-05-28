@@ -77,6 +77,9 @@ public class TopicProcessor implements Callable {
                         System.out.println("ErrorUrls");
                         try {
                             String html = Downloader.downloadTopicPage(url);
+                            if (html.equals("{\"paging\":{\"next\":\"\"},\"htmls\":[]}")) {
+                                break;
+                            }
                             Set<String> newStr = HtmlParserTool.extract10Links(html, Config.domainName);
                             scheduler.redisInsertTopicURL(newStr);
                         } catch (IOException e) {

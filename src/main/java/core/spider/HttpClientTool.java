@@ -1,12 +1,20 @@
 package core.spider;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.cookie.CookieSpecProvider;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
@@ -47,17 +55,17 @@ public class HttpClientTool {
 //        cm.setMaxPerRoute(new HttpRoute(localhost), 50);//设置单个路由大小，更改localhost
 
         //建造者模式，设置超时，多线程设为10s，长一点，艹！！！设置cookie
-        //创建代理地址实例
-        HttpHost proxy = new HttpHost ("113.108.141.98", 9797 );// "222.82.222.242", 9999      "112.91.218.21", 9000
+        //创建代理地址实例 "113.108.141.98", 9797
+//        HttpHost proxy = new HttpHost ("112.91.218.21", 9000);// "58.52.201.119", 8080      "112.91.218.21", 9000  "183.56.131.87", 3128
         //创建路由 使用DefaultProxyRoutePlanner
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+//        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
         RequestConfig globalConfig = RequestConfig.custom().
                 setConnectionRequestTimeout(10000).//410错误
                 setSocketTimeout(10000).
                 setConnectTimeout(10000).
                 setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY).build();
         this.closeableHttpClient = HttpClients.custom().
-                setDefaultRequestConfig(globalConfig).setConnectionManager(cm).setRoutePlanner(routePlanner).build();
+                setDefaultRequestConfig(globalConfig).setConnectionManager(cm).build();
     }
 
     private void setHttpClientContext() {

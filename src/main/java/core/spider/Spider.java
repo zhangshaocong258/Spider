@@ -7,6 +7,7 @@ import core.util.RedisSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by zsc on 2016/8/13.
@@ -25,6 +26,7 @@ public class Spider {
 
     private Scheduler scheduler = new Scheduler();
     private LoginTool loginTool = new LoginTool();
+    private AtomicInteger atomicInteger = new AtomicInteger(0);
 
 
 
@@ -58,10 +60,10 @@ public class Spider {
 
         long startTime = System.currentTimeMillis();
         System.out.println("采集开始");
-        ExecutorService threadPool = Executors.newFixedThreadPool(20);//这个不变，线程20个位置，把所有线程往里面扔
+        ExecutorService threadPool = Executors.newFixedThreadPool(1);//这个不变，线程20个位置，把所有线程往里面扔
         ArrayList<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
         for (int i = 0; i < Config.thread_num; i++) {
-            PageProcessor pageProcessor = new PageProcessor(scheduler);
+            PageProcessor pageProcessor = new PageProcessor(scheduler, atomicInteger);
             results.add(threadPool.submit(pageProcessor));
         }
 
@@ -108,7 +110,7 @@ public class Spider {
 
         long startTime = System.currentTimeMillis();
         System.out.println("采集开始");
-        ExecutorService threadPool = Executors.newFixedThreadPool(3);//这个不变，线程20个位置，把所有线程往里面扔
+        ExecutorService threadPool = Executors.newFixedThreadPool(5);//这个不变，线程20个位置，把所有线程往里面扔
         ArrayList<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
         for (int i = 0; i < content.length; i++) {
             TopicProcessor urlProcessor = new TopicProcessor(scheduler, content[i]);
